@@ -38,18 +38,15 @@ void test5();
 void test6();
 void testBufMgr();
 
-int main() 
-{
+int main() {
 	//Following code shows how to you File and Page classes
 
   const std::string& filename = "test.db";
   // Clean up from any previous runs that crashed.
-  try
-	{
+  try{
     File::remove(filename);
-  }
-	catch(FileNotFoundException)
-	{
+  } catch(FileNotFoundException){
+  
   }
 
   {
@@ -99,7 +96,7 @@ int main()
 
 	//This function tests buffer manager, comment this line if you don't wish to test buffer manager
 	testBufMgr();
-}
+}//end main function
 
 void testBufMgr()
 {

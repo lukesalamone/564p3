@@ -15,96 +15,92 @@
 
 namespace badgerdb {
 
-int BufHashTbl::hash(const File* file, const PageId pageNo){
-  int tmp, value;
-  tmp = (long)file;  // cast of pointer to the file object to an integer
-  value = (tmp + pageNo) % HTSIZE;
-  return value;
-}
+    int BufHashTbl::hash(const File* file, const PageId pageNo){
+      int tmp, value;
+      tmp = (long)file;  // cast of pointer to the file object to an integer
+      value = (tmp + pageNo) % HTSIZE;
+      return value;
+    }//end hash function
 
-BufHashTbl::BufHashTbl(int htSize) : HTSIZE(htSize){
-  // allocate an array of pointers to hashBuckets
-  ht = new hashBucket* [htSize];
-  for(int i=0; i < HTSIZE; i++)
-    ht[i] = NULL;
-}
+    BufHashTbl::BufHashTbl(int htSize) : HTSIZE(htSize){
+      // allocate an array of pointers to hashBuckets
+      ht = new hashBucket* [htSize];
+      for(int i=0; i < HTSIZE; i++)
+        ht[i] = NULL;
+    }//end BufHashTbl constructor
 
-BufHashTbl::~BufHashTbl(){
-  for(int i = 0; i < HTSIZE; i++) {
-    hashBucket* tmpBuf = ht[i];
-    while (ht[i]) {
-      tmpBuf = ht[i];
-      ht[i] = ht[i]->next;
-      delete tmpBuf;
-    }
-  }
-  delete [] ht;
-}
+    BufHashTbl::~BufHashTbl(){
+      for(int i = 0; i < HTSIZE; i++) {
+        hashBucket* tmpBuf = ht[i];
+        while (ht[i]) {
+          tmpBuf = ht[i];
+          ht[i] = ht[i]->next;
+          delete tmpBuf;
+        }
+      }
+      delete [] ht;
+    }//end BufHashTbl destructor
 
-void BufHashTbl::insert(const File* file, const PageId pageNo, const FrameId frameNo)
-{
-  int index = hash(file, pageNo);
+    void BufHashTbl::insert(const File* file, const PageId pageNo, const FrameId frameNo){
+      int index = hash(file, pageNo);
 
-  hashBucket* tmpBuc = ht[index];
-  while (tmpBuc) {
-    if (tmpBuc->file == file && tmpBuc->pageNo == pageNo)
-  		throw HashAlreadyPresentException(tmpBuc->file->filename(), tmpBuc->pageNo, tmpBuc->frameNo);
-    tmpBuc = tmpBuc->next;
-  }
+      hashBucket* tmpBuc = ht[index];
+      while (tmpBuc) {
+        if (tmpBuc->file == file && tmpBuc->pageNo == pageNo)
+            throw HashAlreadyPresentException(tmpBuc->file->filename(), tmpBuc->pageNo, tmpBuc->frameNo);
+        tmpBuc = tmpBuc->next;
+      }
 
-  tmpBuc = new hashBucket;
-  if (!tmpBuc)
-  	throw HashTableException();
+      tmpBuc = new hashBucket;
+      if (!tmpBuc)
+        throw HashTableException();
 
-  tmpBuc->file = (File*) file;
-  tmpBuc->pageNo = pageNo;
-  tmpBuc->frameNo = frameNo;
-  tmpBuc->next = ht[index];
-  ht[index] = tmpBuc;
-}
+      tmpBuc->file = (File*) file;
+      tmpBuc->pageNo = pageNo;
+      tmpBuc->frameNo = frameNo;
+      tmpBuc->next = ht[index];
+      ht[index] = tmpBuc;
+    }//end insert function
 
-void BufHashTbl::lookup(const File* file, const PageId pageNo, FrameId &frameNo)
-{
-  int index = hash(file, pageNo);
-  hashBucket* tmpBuc = ht[index];
-  while (tmpBuc) {
-    if (tmpBuc->file == file && tmpBuc->pageNo == pageNo)
-    {
-      frameNo = tmpBuc->frameNo; // return frameNo by reference
-      return;
-    }
-    tmpBuc = tmpBuc->next;
-  }
+    void BufHashTbl::lookup(const File* file, const PageId pageNo, FrameId &frameNo){
+      int index = hash(file, pageNo);
+      hashBucket* tmpBuc = ht[index];
+      while (tmpBuc) {
+        if (tmpBuc->file == file && tmpBuc->pageNo == pageNo)
+        {
+          frameNo = tmpBuc->frameNo; // return frameNo by reference
+          return;
+        }
+        tmpBuc = tmpBuc->next;
+      }
 
-  throw HashNotFoundException(file->filename(), pageNo);
-}
+      throw HashNotFoundException(file->filename(), pageNo);
+    }//end lookup function
 
-void BufHashTbl::remove(const File* file, const PageId pageNo) {
+    void BufHashTbl::remove(const File* file, const PageId pageNo) {
 
-  int index = hash(file, pageNo);
-  hashBucket* tmpBuc = ht[index];
-  hashBucket* prevBuc = NULL;
+      int index = hash(file, pageNo);
+      hashBucket* tmpBuc = ht[index];
+      hashBucket* prevBuc = NULL;
 
-  while (tmpBuc)
-	{
-    if (tmpBuc->file == file && tmpBuc->pageNo == pageNo)
-		{
-      if(prevBuc)
-				prevBuc->next = tmpBuc->next;
-      else
-				ht[index] = tmpBuc->next;
+      while (tmpBuc){
+        if (tmpBuc->file == file && tmpBuc->pageNo == pageNo){
+          if(prevBuc){
+            prevBuc->next = tmpBuc->next;
+          }else{
+            ht[index] = tmpBuc->next;
+          }
+          delete tmpBuc;
+          return;
+        }
+            else
+            {
+          prevBuc = tmpBuc;
+          tmpBuc = tmpBuc->next;
+        }
+      }
 
-      delete tmpBuc;
-      return;
-    }
-		else
-		{
-      prevBuc = tmpBuc;
-      tmpBuc = tmpBuc->next;
-    }
-  }
+      throw HashNotFoundException(file->filename(), pageNo);
+    }//end remove function
 
-  throw HashNotFoundException(file->filename(), pageNo);
-}
-
-}
+}//end badgerdb namespace
