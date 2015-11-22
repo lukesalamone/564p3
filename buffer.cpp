@@ -158,7 +158,7 @@ namespace badgerdb {
           throw BadBufferException(i, bufDescTable[i].dirty, bufDescTable[i].valid, bufDescTable[i].refbit);
         }
         if(bufDescTable[i].dirty){
-          file->writePage(bufPool[i]);
+          bufDescTable[i].file->writePage(bufPool[i]);
           bufDescTable[i].dirty = false;
         }  
         // part b
