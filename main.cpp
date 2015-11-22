@@ -98,8 +98,7 @@ int main() {
 	testBufMgr();
 }//end main function
 
-void testBufMgr()
-{
+void testBufMgr(){
 	// create buffer manager
 	bufMgr = new BufMgr(num);
 
@@ -163,11 +162,9 @@ void testBufMgr()
 	std::cout << "\n" << "Passed all tests." << "\n";
 }
 
-void test1()
-{
+void test1(){
 	//Allocating pages in a file...
-	for (i = 0; i < num; i++)
-	{
+	for (i = 0; i < num; i++){
 		bufMgr->allocPage(file1ptr, pid[i], page);
 		sprintf((char*)tmpbuf, "test.1 Page %d %7.1f", pid[i], (float)pid[i]);
 		rid[i] = page->insertRecord(tmpbuf);
