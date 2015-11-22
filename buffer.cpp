@@ -138,6 +138,14 @@ namespace badgerdb {
     }
   }
 
+  /**
+   * Allocates a new, empty page in the file and returns the Page object.
+   * The newly allocated page is also assigned a frame in the buffer pool.
+   *
+   * @param file    File object
+   * @param PageNo  Page number. The number assigned to the page in the file is returned via this reference.
+   * @param page    Reference to page pointer. The newly allocated in-memory Page object is returned via this reference.
+   */
   void BufMgr::flushFile(const File* file){
     FrameId location;
     for (FrameId i = 0; i < numBufs; i++){
@@ -147,10 +155,10 @@ namespace badgerdb {
           throw PagePinnedException(file->filename(), bufDescTable[i].pageNo, location);
         }
         if(!bufDescTable[i].valid){
-          throw BadBufferException(i, bufDescTable[i].dirty, bufDescTable[i].valid, bufDescTable[i].refBit);
+          throw BadBufferException(i, bufDescTable[i].dirty, bufDescTable[i].valid, bufDescTable[i].refbit);
         }
         if(bufDescTable[i].dirty){
-          file->writePage(bufDescTable[i].page);
+          file->writePage(bufPool[i]);
           bufDescTable[i].dirty = false;
         }  
         // part b
@@ -163,13 +171,13 @@ namespace badgerdb {
 
   void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page){
     *page = file->allocatePage();// return a newly allocated page
-    *pageNO = page->page_number();// return a newly allocated page number
+    pageNo = page->page_number();// return a newly allocated page number
     FrameId location;
     allocBuf(location);
     bufPool[location] = *page;
     bufDescTable[location].file = file;
     bufDescTable[location].pageNo = pageNo;
-    hashTable->insert(bufDescTable.file , bufDescTable.pageNo , location); 
+    hashTable->insert(bufDescTable[location].file , bufDescTable[location].pageNo , location); 
     bufDescTable[location].Set(bufDescTable[location].file, bufDescTable[location].pageNo);
   }//end allocPage method
 
