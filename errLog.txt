@@ -1,0 +1,21 @@
+luke $ make
+cd src;\
+	g++ -std=c++0x *.cpp exceptions/*.cpp -I. -Wall -o badgerdb_main
+buffer.cpp: In member function ‘void badgerdb::BufMgr::flushFile(const badgerdb::File*)’:
+buffer.cpp:150:101: error: ‘class badgerdb::BufDesc’ has no member named ‘refBit’
+           throw BadBufferException(i, bufDescTable[i].dirty, bufDescTable[i].valid, bufDescTable[i].refBit);
+                                                                                                     ^
+buffer.cpp:153:43: error: ‘class badgerdb::BufDesc’ has no member named ‘page’
+           file->writePage(bufDescTable[i].page);
+                                           ^
+buffer.cpp: In member function ‘void badgerdb::BufMgr::allocPage(badgerdb::File*, badgerdb::PageId&, badgerdb::Page*&)’:
+buffer.cpp:166:6: error: ‘pageNO’ was not declared in this scope
+     *pageNO = page->page_number();// return a newly allocated page number
+      ^
+buffer.cpp:172:36: error: request for member ‘file’ in ‘((badgerdb::BufMgr*)this)->badgerdb::BufMgr::bufDescTable’, which is of pointer type ‘badgerdb::BufDesc*’ (maybe you meant to use ‘->’ ?)
+     hashTable->insert(bufDescTable.file , bufDescTable.pageNo , location); 
+                                    ^
+buffer.cpp:172:56: error: request for member ‘pageNo’ in ‘((badgerdb::BufMgr*)this)->badgerdb::BufMgr::bufDescTable’, which is of pointer type ‘badgerdb::BufDesc*’ (maybe you meant to use ‘->’ ?)
+     hashTable->insert(bufDescTable.file , bufDescTable.pageNo , location); 
+                                                        ^
+make: *** [all] Error 1

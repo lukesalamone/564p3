@@ -154,7 +154,7 @@ namespace badgerdb {
           bufDescTable[i].dirty = false;
         }  
         // part b
-        hashTable.remove(bufDescTable[i].file,  bufDescTable[i].pageNo);
+        hashTable->remove(bufDescTable[i].file,  bufDescTable[i].pageNo);
         // part c
         bufDescTable[i].Clear();
       }
@@ -162,31 +162,29 @@ namespace badgerdb {
   }//end flushFile method
 
   void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page){
-    &page = file->allocatePage();// return a newly allocated page
-    pageNO = page->page_number();// return a newly allocated page number
+    *page = file->allocatePage();// return a newly allocated page
+    *pageNO = page->page_number();// return a newly allocated page number
     FrameId location;
     allocBuf(location);
-    bufPool[location] = page;
+    bufPool[location] = *page;
     bufDescTable[location].file = file;
     bufDescTable[location].pageNo = pageNo;
-    BufHashTbl->insert(bufDescTable.file , bufDescTable.pageNo , location); 
-    bufDescTable[location]->Set(bufDescTable[location].file, bufDescTable[location].pageNo);
+    hashTable->insert(bufDescTable.file , bufDescTable.pageNo , location); 
+    bufDescTable[location].Set(bufDescTable[location].file, bufDescTable[location].pageNo);
   }//end allocPage method
 
   void BufMgr::disposePage(File* file, const PageId PageNo){
-    
     // do we need to write it before deleting?
-      FrameId location;
-      try{
-        lookup(file, PageNo, &location);
-        BufHashTbl->remove(file, PageNo);
-        bufDescTable[location].valid = false;
-        file->deletePage(PageNo);
-        
-      }catch(HashNotFoundException e){
-         file->deletePage(PageNo);
-        
-      }  
+    FrameId location;
+    try{
+      hashTable->lookup(file, PageNo, location);
+      hashTable->remove(file, PageNo);
+      bufDescTable[location].valid = false;
+      file->deletePage(PageNo);
+      
+    }catch(HashNotFoundException e){
+       file->deletePage(PageNo);
+    }  
   }
 
   void BufMgr::printSelf(void){
