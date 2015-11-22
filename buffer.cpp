@@ -124,7 +124,7 @@ namespace badgerdb {
   void BufMgr::unPinPage(File* file, const PageId pageNo, const bool dirty){
     FrameId location;
     try{
-      hashTable->lookup(file, pageNo, &location);
+      hashTable->lookup(file, pageNo, location);
       if( bufDescTable[location].pinCnt == 0){
         throw PageNotPinnedException(file->filename(), pageNo, location);
       } else {
@@ -139,9 +139,9 @@ namespace badgerdb {
   }
 
   void BufMgr::flushFile(const File* file){
-    
-     for (FrameId i = 0; i < numBufs; i++){
-        if(bufDescTable[i].file == file){
+    FrameId location;
+    for (FrameId i = 0; i < numBufs; i++){
+      if(bufDescTable[i].file == file){
         // part a
         if(bufDescTable[i].pinCnt>0){
           throw PagePinnedException(file->filename(), bufDescTable[i].pageNo, location);
@@ -154,19 +154,16 @@ namespace badgerdb {
           bufDescTable[i].dirty = false;
         }  
         // part b
-        BufHashTbl->remove(bufDescTable[i].file,  bufDescTable[i].pageNo);
+        hashTable.remove(bufDescTable[i].file,  bufDescTable[i].pageNo);
         // part c
-        bufDescTable[i]->Clear();
+        bufDescTable[i].Clear();
       }
-   
-    }
-    
+    }//end for loop
   }//end flushFile method
 
-  void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page) 
-  {
-    page = file->allocatePage();// return a newly allocated page
-    pageNO = page.page_number();// return a newly allocated page number
+  void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page){
+    &page = file->allocatePage();// return a newly allocated page
+    pageNO = page->page_number();// return a newly allocated page number
     FrameId location;
     allocBuf(location);
     bufPool[location] = page;
@@ -174,12 +171,9 @@ namespace badgerdb {
     bufDescTable[location].pageNo = pageNo;
     BufHashTbl->insert(bufDescTable.file , bufDescTable.pageNo , location); 
     bufDescTable[location]->Set(bufDescTable[location].file, bufDescTable[location].pageNo);
+  }//end allocPage method
 
-    
-  }
-
-  void BufMgr::disposePage(File* file, const PageId PageNo)
-  {
+  void BufMgr::disposePage(File* file, const PageId PageNo){
     
     // do we need to write it before deleting?
       FrameId location;
@@ -195,8 +189,7 @@ namespace badgerdb {
       }  
   }
 
-  void BufMgr::printSelf(void) 
-  {
+  void BufMgr::printSelf(void){
     BufDesc* tmpbuf;
   int validFrames = 0;
     
